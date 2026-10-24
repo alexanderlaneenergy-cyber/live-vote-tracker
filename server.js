@@ -1,9 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+// Force Render to use reliable DNS servers to find MongoDB
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
+// The long connection string with your password
 const dbURI = "mongodb://alexanderlaneenergy_db_user:godisgood7789@ac-egjhxwa-shard-00-00.t6cge1n.mongodb.net:27017,ac-egjhxwa-shard-00-01.t6cge1n.mongodb.net:27017,ac-egjhxwa-shard-00-02.t6cge1n.mongodb.net:27017/?ssl=true&replicaSet=atlas-a5k546-shard-0&authSource=admin";
+
 mongoose.connect(dbURI).then(() => console.log('Database connected!')).catch(err => console.log(err));
 
 const Vote = mongoose.model('Vote', new mongoose.Schema({
