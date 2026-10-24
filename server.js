@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
-const dbURI = process.env.MONGO_URI;
+const dbURI = "mongodb+srv://alexanderlaneenergy_db_user:godisgood7789@cluster0.t6cge1n.mongodb.net/";
 mongoose.connect(dbURI).then(() => console.log('Database connected!')).catch(err => console.log(err));
 
 const Vote = mongoose.model('Vote', new mongoose.Schema({
