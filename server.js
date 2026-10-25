@@ -8,7 +8,7 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
-const dbURI = "mongodb+srv://alexanderlaneenergy_db_user:godisgood7789@cluster0.t6cge1n.mongodb.net/?retryWrites=true&w=majority";
+const dbURI = "mongodb://alexanderlaneenergy_db_user:godisgood7789@ac-egjhxwa-shard-00-00.t6cge1n.mongodb.net:27017,ac-egjhxwa-shard-00-01.t6cge1n.mongodb.net:27017,ac-egjhxwa-shard-00-02.t6cge1n.mongodb.net:27017/?ssl=true&replicaSet=atlas-a5k546-shard-0&authSource=admin";
 
 mongoose.connect(dbURI)
   .then(() => console.log('Database connected!'))
